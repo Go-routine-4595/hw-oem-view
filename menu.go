@@ -8,10 +8,11 @@ import (
 
 func Menu(res http.ResponseWriter, req *http.Request) {
 	var (
-		keys    map[string]string
-		barUrls []string
-		tsUrls  []string
-		mapUrls []string
+		keys       map[string]string
+		barUrls    []string
+		tsUrls     []string
+		mapUrls    []string
+		statesUrls []string
 	)
 
 	_, keys = openFile("UAS_external_event_queue.jsonl")
@@ -35,6 +36,8 @@ func Menu(res http.ResponseWriter, req *http.Request) {
 		tsUrls = append(tsUrls, url_t)
 		url_t = "http://localhost:8080/map?" + params.Encode()
 		mapUrls = append(mapUrls, url_t)
+		url_t = "http://localhost:8080/state?" + params.Encode()
+		statesUrls = append(statesUrls, url_t)
 	}
 
 	// Set the Content-Type header to text/html
@@ -58,6 +61,12 @@ func Menu(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(res, "<h1>List of Map plot </h1>")
 	// Iterate over the URLs and create clickable links
 	for _, url := range mapUrls {
+		fmt.Fprintf(res, `<a href="%s">%s</a><br>`, url, url)
+	}
+
+	fmt.Fprintln(res, "<h1>List of States plot </h1>")
+	// Iterate over the URLs and create clickable links
+	for _, url := range statesUrls {
 		fmt.Fprintf(res, `<a href="%s">%s</a><br>`, url, url)
 	}
 

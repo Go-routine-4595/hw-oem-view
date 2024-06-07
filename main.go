@@ -84,5 +84,7 @@ func main() {
 
 	http.HandleFunc("/map", mymap)
 
+	http.HandleFunc("/state", StateGraph)
+
 	http.ListenAndServe(":8080", nil)
 }
