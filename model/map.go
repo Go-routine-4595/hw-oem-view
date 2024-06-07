@@ -1,15 +1,14 @@
-package main
+package model
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
-	"image/color"
-	"math"
-	"net/http"
-	"net/url"
-
 	sm "github.com/flopp/go-staticmaps"
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
+	"image/color"
+	"math"
 )
 
 const (
@@ -22,30 +21,22 @@ type Position struct {
 	lng float64
 }
 
-func mymap(res http.ResponseWriter, req *http.Request) {
+func (s Service) DrawMap(val string) ([]byte, error) {
 	var (
-		pos    []Position
-		params url.Values
-		val    string
+		pos []Position
+		res *bytes.Buffer
 	)
-	// Query parameters are returned as a map[string][]string
-	params = req.URL.Query()
-	// To get the value of a specific key:
-	// (assuming the parameter exists)
-	val = params.Get("key")
 
+	res = new(bytes.Buffer)
 	if val == "" {
-		val = "BAGT201"
+		fmt.Fprintln(res, "<html><body>")
+		fmt.Fprintf(res, "<h1>missing equipement key</h1>")
+		return nil, errors.New("No key found")
 	}
 
-	pos = getPoints(val)
+	pos = s.getPoints(val)
 	if pos == nil {
-		res.Header().Set("Content-Type", "text/html")
-		// Write the HTML opening tags and the title
-		fmt.Fprintln(res, "<html><body>")
-		fmt.Fprintf(res, "<h1>No value for: %s </h1>", val)
-		http.Error(res, "No value found", http.StatusNotFound)
-		return
+		return nil, errors.New("no value found")
 	}
 
 	ctx := sm.NewContext()
@@ -59,27 +50,26 @@ func mymap(res http.ResponseWriter, req *http.Request) {
 				16.0,
 			),
 		)
-		// Debug
-		//fmt.Printf("%f/%f\n", i.lat, i.lng)
 	}
 	img, err := ctx.Render()
 	if err != nil {
 		panic(err)
 	}
 	imgCtx := gg.NewContextForImage(img)
-	res.Header().Set("Content-Type", "image/png")
+	//res.Header().Set("Content-Type", "image/png")
 	if err := imgCtx.EncodePNG(res); err != nil {
 		panic(err)
 	}
+	return res.Bytes(), nil
 }
 
-func getPoints(val string) []Position {
+func (s Service) getPoints(val string) []Position {
 	var (
 		events []AssetEvent
 		pos    []Position
 		//keys   map[string]string
 	)
-	events, _ = openFile("UAS_external_event_queue.jsonl")
+	events, _ = s.datasource.GetDataSources()
 
 	for _, e := range events {
 		var (

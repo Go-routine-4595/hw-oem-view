@@ -1,12 +1,14 @@
-package main
+package model
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"time"
+
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
-	"net/http"
-	"time"
 )
 
 type StatePoint struct {
@@ -78,15 +80,17 @@ func isStateCahnged(s1 StatePoint, s2 StatePoint) bool {
 	return true
 }
 
-func StateGraph(res http.ResponseWriter, req *http.Request) {
-	events, _ := openFile("UAS_external_event_queue.jsonl")
+func (s Service) StateGraph(key string) ([]byte, error) {
+	var res *bytes.Buffer
 
-	key := req.URL.Query().Get("key")
+	res = new(bytes.Buffer)
+
+	events, _ := s.datasource.GetDataSources()
 
 	if key == "" {
-		res.WriteHeader(http.StatusNotFound)
+		//res.WriteHeader(http.StatusNotFound)
 		res.Write([]byte(fmt.Sprintf("key not found: %s", key)))
-		return
+		return nil, errors.New(string(res.Bytes()))
 	}
 
 	equipmentState := NewEquipmentSate(key)
@@ -110,7 +114,7 @@ func StateGraph(res http.ResponseWriter, req *http.Request) {
 		if i != 0 {
 			//fmt.Println("P0(t): ", stateList[i-1].Timestamp.Unix(), "P1(t): ", state.Timestamp.Unix(), " delta: ", state.Timestamp.Unix()-stateList[i-1].Timestamp.Unix()-1)
 			if state.Timestamp.Unix()-stateList[i-1].Timestamp.Unix()-1 > 0 {
-				t_pts.X = float64(state.Timestamp.Unix() - 1)
+				t_pts.X = float64(state.Timestamp.Unix())
 				if stateList[i-1].NewState == inActive {
 					t_pts.Y = float64(0)
 				} else {
@@ -133,23 +137,15 @@ func StateGraph(res http.ResponseWriter, req *http.Request) {
 
 	line, err := plotter.NewLine(pts)
 	if err != nil {
-		processError(err)
-		return
+		panic(err)
 	}
 	p.Add(line)
 
-	/*
-		if err := p.Save(4*vg.Inch, 4*vg.Inch, "state.png"); err != nil {
-			processError(err)
-			return
-		}
-
-		http.ServeFile(res, req, "state.png")
-	*/
-	res.Header().Set("Content-Type", "image/png")
 	iow, err := p.WriterTo(10*vg.Inch, 6*vg.Inch, "png")
 	if err != nil {
 		fmt.Println(err)
 	}
 	iow.WriteTo(res)
+
+	return res.Bytes(), nil
 }
