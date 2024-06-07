@@ -11,10 +11,12 @@ func main() {
 		service model.IService
 		apiSrv  api.ApiController
 		data    *datasource.DataSource
+		log     model.IService
 	)
 	data = datasource.NewDataSource("UAS_external_event_queue.jsonl")
 	service = model.NewService(data)
-	apiSrv = api.NewApiController(service, data.GetKeys())
+	log = NewLoggingService(service)
+	apiSrv = api.NewApiController(log, data.GetKeys())
 
 	apiSrv.Run()
 }
