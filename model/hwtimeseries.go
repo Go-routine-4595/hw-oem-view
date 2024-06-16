@@ -83,6 +83,7 @@ func (s Service) DrawOEMChartBar(val string) ([]byte, error) {
 	res = new(bytes.Buffer)
 
 	events, keys = s.datasource.GetDataSources()
+
 	if val != "" {
 		title = val
 		bars = append(bars, createBars(events, val)...)

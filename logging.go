@@ -83,3 +83,13 @@ func (s *LoggingService) StateGraph(val string) (b []byte, err error) {
 
 	return s.next.StateGraph(val)
 }
+
+func (s *LoggingService) GetKeys() map[string]string {
+	defer func(start time.Time) {
+		s.log.Info().
+			Str("method", "GetKeys").
+			Dur("took", time.Since(start)).Send()
+	}(time.Now())
+
+	return s.next.GetKeys()
+}

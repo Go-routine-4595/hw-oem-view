@@ -10,6 +10,7 @@ type IService interface {
 	DrawOEMBarPlot(val string) ([]byte, error)
 	DrawMap(val string) ([]byte, error)
 	StateGraph(val string) ([]byte, error)
+	GetKeys() map[string]string
 }
 
 type AssociatedData struct {
@@ -32,14 +33,20 @@ type Events struct {
 	AssetEvents []AssetEvent `json:"Events"`
 }
 
-type DataSource interface {
+type IDataSource interface {
 	GetDataSources() ([]AssetEvent, map[string]string)
+	GetOEMForAsset() []string
+	GetKeys() map[string]string
 }
 
 type Service struct {
-	datasource DataSource
+	datasource IDataSource
 }
 
-func NewService(d DataSource) Service {
+func NewService(d IDataSource) Service {
 	return Service{datasource: d}
+}
+
+func (s Service) GetKeys() map[string]string {
+	return s.datasource.GetKeys()
 }

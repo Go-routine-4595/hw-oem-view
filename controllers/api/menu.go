@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -38,6 +39,10 @@ func (a ApiController) Menu(res http.ResponseWriter, req *http.Request) {
 		mapUrls = append(mapUrls, url_t)
 		url_t = "http://localhost:8080/state?" + params.Encode()
 		statesUrls = append(statesUrls, url_t)
+		log.Info().Msg("Stats")
+		log.Info().Int("Keylen", len(key)).Msg("menu")
+		fmt.Println("Menu Stats")
+		fmt.Println("Keylen: ", len(key))
 	}
 
 	// Set the Content-Type header to text/html
@@ -84,6 +89,9 @@ func (a ApiController) MenuEcho(c echo.Context) error {
 		res        *bytes.Buffer
 	)
 
+	log.Info().Msg("Menu Echo")
+	fmt.Println("Menu Echo")
+
 	res = new(bytes.Buffer)
 
 	barUrls = append(barUrls, "http://localhost:8080/oem-bar")
@@ -106,6 +114,10 @@ func (a ApiController) MenuEcho(c echo.Context) error {
 		mapUrls = append(mapUrls, url_t)
 		url_t = "http://localhost:8080/state?" + params.Encode()
 		statesUrls = append(statesUrls, url_t)
+		log.Info().Msg("Stats")
+		log.Info().Int("Keylen", len(key)).Msg("menu")
+		fmt.Println("Menu Stats")
+		fmt.Println("Keylen: ", len(key))
 	}
 
 	// Set the Content-Type header to text/html
@@ -154,6 +166,16 @@ func (a ApiController) testMenuEcho(c echo.Context) error {
 		statesUrls []string
 		res        *bytes.Buffer
 	)
+
+	//Refresh the key is more event has been added
+	a.keys = a.srv.GetKeys()
+
+	log.Info().Msg("testMenuEcho Echo")
+	fmt.Println("testMenuEcho Echo")
+	log.Info().Msg("Stats")
+	log.Info().Int("Keylen", len(a.keys)).Msg("menu")
+	fmt.Println("Menu Stats")
+	fmt.Println("Keylen: ", len(a.keys))
 
 	res = new(bytes.Buffer)
 
