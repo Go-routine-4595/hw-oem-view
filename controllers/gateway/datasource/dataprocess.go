@@ -162,21 +162,21 @@ func openFile(s string) ([]model.AssetEvent, map[string]string) {
 }
 
 // Get Alarm lit
-func (d DataSource) GetOEMForAsset() []string {
+func (d *DataSource) GetOEMForAsset() []string {
 	d.dataLock.Lock()
 	defer d.dataLock.Unlock()
 	return d.Alarms
 }
 
 // Get Keys public method
-func (d DataSource) GetKeys() map[string]string {
+func (d *DataSource) GetKeys() map[string]string {
 	d.dataLock.Lock()
 	defer d.dataLock.Unlock()
 	return d.Keys
 }
 
 // Return the data
-func (d DataSource) GetDataSources() ([]model.AssetEvent, map[string]string) {
+func (d *DataSource) GetDataSources() ([]model.AssetEvent, map[string]string) {
 	d.dataLock.Lock()
 	defer d.dataLock.Unlock()
 	return d.Events, d.Keys
